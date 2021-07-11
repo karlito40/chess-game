@@ -1,0 +1,24 @@
+{
+  "version": "0.0.0",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "serve": "vite preview",
+    "test": "jest"
+  },
+  "dependencies": {
+    "@xstate/inspect": "^0.4.1",
+    "@xstate/vue": "^0.8.0",
+    "vue": "^3.0.5",
+    "xstate": "^4.22.0"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.14.6",
+    "@babel/preset-env": "^7.14.7",
+    "@vitejs/plugin-vue": "^1.2.4",
+    "@vue/compiler-sfc": "^3.0.5",
+    "babel-jest": "^27.0.6",
+    "jest": "^27.0.6",
+    "vite": "^2.4.0"
+  }
+}
