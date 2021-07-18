@@ -11,6 +11,13 @@
         :data-single-dim-id="(i*board.length)+j"
         class="board__cell"
       >
+        <div
+          v-if="cell.piece"
+          :data-color="cell.piece.color"
+          class="piece"
+        >
+          {{ cell.piece.type }}
+        </div>
       </div>
     </template>
   </div>
@@ -25,22 +32,17 @@ export default defineComponent({
       type: Array,
       required: true
     }
-  },
-
-  setup() {
-    
-  },
+  }
 })
 </script>
 
 <style scoped>
 .board {
-  --board-dark-color: #0e0505;
+  --board-dark-color: #3a1818;
   --board-light-color: white;
   
   display: grid;
   grid-template-columns: repeat(8, 1fr);
-  border-radius: 10px;
   overflow: hidden;
   border: 2px solid var(--board-dark-color);
 }
@@ -48,6 +50,9 @@ export default defineComponent({
 .board__cell {
   aspect-ratio: 1 / 1;
   background: var(--board-light-color);
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .board__cell:nth-child(-n+8):nth-child(even) {
@@ -80,5 +85,22 @@ export default defineComponent({
 
 .board__cell:nth-child(n+57):nth-child(-n+64):nth-child(odd) {
   background: var(--board-dark-color);
+}
+
+.piece {
+  border-radius: 5px;
+  background: #b1b1b1;
+  font-weight: bold;
+  padding: 0.3rem;
+}
+
+.piece[data-color="black"] {
+  background: rgb(136, 146, 175);
+  color: rgb(0, 0, 0);
+}
+
+.piece[data-color="white"] {
+  background: rgb(250, 229, 136);
+  color: rgb(175, 118, 11);
 }
 </style>

@@ -4,7 +4,10 @@ export const WHITE = 'white'
 
 export const invertColor = (color) => color === BLACK ? WHITE : BLACK
 
-const __ = undefined;
+const Cell = (piece) => ({
+  highlighted: false,
+  piece
+});
 
 const Piece = (type, color) => ({ type, color })
 
@@ -18,13 +21,13 @@ export const Pawn = (color) => Piece('pawn', color)
 
 export const createBoard = () => {
   return [
-    [Tower(BLACK), Knight(BLACK), Bishop(BLACK), Queen(BLACK), Bishop(BLACK), Tower(BLACK)],
-    [Pawn(BLACK), Pawn(BLACK), Pawn(BLACK), Pawn(BLACK), Pawn(BLACK), Pawn(BLACK)],
-    [__, __, __, __, __, __],
-    [__, __, __, __, __, __],
-    [__, __, __, __, __, __],
-    [__, __, __, __, __, __],
-    [Pawn(WHITE), Pawn(WHITE), Pawn(WHITE), Pawn(WHITE), Pawn(WHITE), Pawn(WHITE)],
-    [Tower(WHITE), Knight(WHITE), Bishop(WHITE), Queen(WHITE), Bishop(WHITE), Tower(WHITE)],
+    [Cell(Tower(BLACK)), Cell(Knight(BLACK)), Cell(Bishop(BLACK)), Cell(Queen(BLACK)), Cell(King(BLACK)), Cell(Bishop(BLACK)), Cell(Knight(BLACK)), Cell(Tower(BLACK))],
+    [Cell(Pawn(BLACK)), Cell(Pawn(BLACK)), Cell(Pawn(BLACK)), Cell(Pawn(BLACK)), Cell(Pawn(BLACK)), Cell(Pawn(BLACK)), Cell(Pawn(BLACK)), Cell(Pawn(BLACK))],
+    [Cell(), Cell(), Cell(), Cell(), Cell(), Cell(), Cell(), Cell()],
+    [Cell(), Cell(), Cell(), Cell(), Cell(), Cell(), Cell(), Cell()],
+    [Cell(), Cell(), Cell(), Cell(), Cell(), Cell(), Cell(), Cell()],
+    [Cell(), Cell(), Cell(), Cell(), Cell(), Cell(), Cell(), Cell()],
+    [Cell(Pawn(WHITE)), Cell(Pawn(WHITE)), Cell(Pawn(WHITE)), Cell(Pawn(WHITE)), Cell(Pawn(WHITE)), Cell(Pawn(WHITE)), Cell(Pawn(WHITE)), Cell(Pawn(WHITE))],
+    [Cell(Tower(WHITE)), Cell(Knight(WHITE)), Cell(Bishop(WHITE)), Cell(Queen(WHITE)), Cell(King(WHITE)), Cell(Bishop(WHITE)), Cell(Knight(WHITE)), Cell(Tower(WHITE))],
   ]
 }

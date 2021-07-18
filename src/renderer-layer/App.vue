@@ -24,7 +24,10 @@ export default {
 </script>
 
 <style>
-html { box-sizing: border-box; }
+html { 
+  box-sizing: border-box;
+  font-family: Arial, Helvetica, sans-serif;
+}
 *, *:before, *:after { box-sizing: inherit; }
 body { margin: 0; }
 </style>
@@ -39,6 +42,7 @@ body { margin: 0; }
 }
 
 .board {
-  width: 700px;
+  /* TODO: resposive */
+  width: 600px;
 }
 </style>
