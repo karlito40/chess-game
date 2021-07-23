@@ -19,7 +19,7 @@ export const Queen = (color) => Piece('queen', color)
 
 export const Pawn = (color) => Piece('pawn', color)
 
-export const createBoard = () => {
+export const createFullBoard = () => {
   return [
     [Cell(Tower(BLACK)), Cell(Knight(BLACK)), Cell(Bishop(BLACK)), Cell(Queen(BLACK)), Cell(King(BLACK)), Cell(Bishop(BLACK)), Cell(Knight(BLACK)), Cell(Tower(BLACK))],
     [Cell(Pawn(BLACK)), Cell(Pawn(BLACK)), Cell(Pawn(BLACK)), Cell(Pawn(BLACK)), Cell(Pawn(BLACK)), Cell(Pawn(BLACK)), Cell(Pawn(BLACK)), Cell(Pawn(BLACK))],
@@ -30,4 +30,10 @@ export const createBoard = () => {
     [Cell(Pawn(WHITE)), Cell(Pawn(WHITE)), Cell(Pawn(WHITE)), Cell(Pawn(WHITE)), Cell(Pawn(WHITE)), Cell(Pawn(WHITE)), Cell(Pawn(WHITE)), Cell(Pawn(WHITE))],
     [Cell(Tower(WHITE)), Cell(Knight(WHITE)), Cell(Bishop(WHITE)), Cell(Queen(WHITE)), Cell(King(WHITE)), Cell(Bishop(WHITE)), Cell(Knight(WHITE)), Cell(Tower(WHITE))],
   ]
+}
+
+export const createEmptyBoard = () => {
+  return Array.from({ length: 8 }, () => 
+    Array.from({ length: 8 }, (v, j) => Cell())
+  )
 }

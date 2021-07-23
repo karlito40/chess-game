@@ -1,35 +1,43 @@
 <template>
   <div class="app">
-    <Board :board="state.context.board"/>
+    <Game />
   </div>
 </template>
 
 <script>
-import { useMachine } from '@xstate/vue';
-import { useLogicLayer } from './hooks';
+import Game from './pages/Game.vue'
 
 export default {
-  setup() {
-    const { ChessMachine } = useLogicLayer()
-    const { state, send } = useMachine(ChessMachine(), {
-      devTools: true
-    })
-
-    return {
-      state,
-      send
-    };
-  }
+  components: { Game }
 };
 </script>
 
 <style>
+:root {
+  --board-dark-color: #789556;
+  --board-light-color: #EBECD0;
+
+  --piece-light-color: rgb(250, 229, 136);
+  --piece-dark-color: rgb(136, 146, 175);
+}
+
 html { 
   box-sizing: border-box;
   font-family: Arial, Helvetica, sans-serif;
 }
 *, *:before, *:after { box-sizing: inherit; }
 body { margin: 0; }
+
+.absolute-center {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.btn {
+  cursor: pointer;
+}
 </style>
 
 <style scoped>
@@ -39,10 +47,5 @@ body { margin: 0; }
   justify-content: center;
   min-height: 100vh;
   background: #f7f4ee;
-}
-
-.board {
-  /* TODO: resposive */
-  width: 600px;
 }
 </style>

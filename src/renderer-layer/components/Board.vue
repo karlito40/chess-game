@@ -38,9 +38,6 @@ export default defineComponent({
 
 <style scoped>
 .board {
-  --board-dark-color: #3a1818;
-  --board-light-color: white;
-  
   display: grid;
   grid-template-columns: repeat(8, 1fr);
   overflow: hidden;
@@ -95,12 +92,12 @@ export default defineComponent({
 }
 
 .piece[data-color="black"] {
-  background: rgb(136, 146, 175);
+  background: var(--piece-dark-color);
   color: rgb(0, 0, 0);
 }
 
 .piece[data-color="white"] {
-  background: rgb(250, 229, 136);
+  background: var(--piece-light-color);
   color: rgb(175, 118, 11);
 }
 </style>

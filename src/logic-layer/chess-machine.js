@@ -1,8 +1,9 @@
-import { actions } from 'xstate'
 import { createModel } from 'xstate/lib/model'
-import { BLACK, createBoard, WHITE , invertColor } from './board'
+import { BLACK, WHITE , invertColor, createFullBoard, createEmptyBoard } from './board'
 
 const FIFTEEN_MIN_IN_SEC = 60 * 15
+
+const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms))
 
 // actionManager 
 //   // history
@@ -10,7 +11,11 @@ const FIFTEEN_MIN_IN_SEC = 60 * 15
 
 export default (/* internalDeps */) => (/* options */) => {
   const chessModel = createModel({
-    board: createBoard(),
+    // Todo: move that stuff in a flip machine
+    selectedCoinFace: null,
+    flippedCoinFace: null,
+
+    board: createFullBoard(),
     selectedPiece: null,
     players: [
       {
@@ -34,7 +39,10 @@ export default (/* internalDeps */) => (/* options */) => {
     states: {
       idle: {
         on: {
-          NEW_GAME: 'flipping_coin'
+          NEW_GAME: {
+            target: 'flipping_coin',
+            actions: ['selectCoinFace']
+          }
         }
       },
 
@@ -43,9 +51,15 @@ export default (/* internalDeps */) => (/* options */) => {
           id: 'flip_a_coin',
           src: 'flipACoin',
           onDone: {
-            target: 'playing',
-            actions: ['determineWhitePlayer']
+            target: 'coin_result',
+            actions: ['setFlippedCoinFace', 'determineWhitePlayer']
           }
+        }
+      },
+
+      coin_result: {
+        after: {
+          3000: 'playing'
         }
       },
 
@@ -81,14 +95,50 @@ export default (/* internalDeps */) => (/* options */) => {
       // + canMovePiece
       willCheckmate: (context, event) => false
     },
+
+    services: {
+      flipACoin: async (context, event) => {
+        const fallDuration = 1000
+        await sleep(fallDuration)
+
+        const rand = Math.random() > 0.5 
+        return Promise.resolve({ coinFace: rand ? 'heads' : 'tails' })
+      },
+    },
+
     actions: {
+      initBoard: chessModel.assign({
+        board: createFullBoard
+      }),
+
+      selectCoinFace: chessModel.assign({
+        selectedCoinFace: (context, event) => event.selectedFace
+      }),
+      
+      setFlippedCoinFace: chessModel.assign({
+        flippedCoinFace: (context, event) => event.data.coinFace
+      }),
+
+      determineWhitePlayer: chessModel.assign({
+        players: (context, event) => {
+          const { coinFace } = event.data
+          const didP1GuessRight = context.selectedCoinFace === coinFace
+          return [
+            {
+              ...context.players[0],
+              color: didP1GuessRight ? WHITE : BLACK
+            },
+            {
+              ...context.players[1],
+              color: !didP1GuessRight ? WHITE : BLACK
+            }
+          ]
+        }
+      }),
+
       selectPiece: chessModel.assign({
         selectedPiece: (_, event) =>  event.value
       }),
-
-      initBoard: chessModel.assign({
-        board: createBoard
-      })
     }
   });
   
