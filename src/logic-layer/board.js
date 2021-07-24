@@ -1,3 +1,9 @@
+const ID = (() => {
+  let id = 0
+  return () => {
+    return id++
+  }
+})()
 
 export const BLACK = 'black'
 export const WHITE = 'white'
@@ -9,7 +15,11 @@ const Cell = (piece) => ({
   piece
 });
 
-const Piece = (type, color) => ({ type, color })
+const Piece = (type, color) => ({
+  type,
+  color,
+  id: ID()
+})
 
 export const Tower = (color) => Piece('tower', color)
 export const Knight = (color) => Piece('knight', color)

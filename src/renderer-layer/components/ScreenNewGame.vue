@@ -14,7 +14,7 @@
     <button
       :disabled="!selectedFace" 
       class="btn"
-      @click="send('NEW_GAME', { selectedFace })"
+      @click="$emit('submit', selectedFace)"
     >
       Let's roll!
     </button>
@@ -30,10 +30,6 @@ export default {
   props: {
     guesser: {
       type: Object,
-      required: true
-    },
-    send: {
-      type: Function,
       required: true
     }
   },

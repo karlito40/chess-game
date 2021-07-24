@@ -1,10 +1,20 @@
 <template>
   <div class="game">
-    <div class="game__scene">
+    <div
+      v-if="state.value === 'prevent_funny_vue3_xstate_bug'"
+    >
+      Preventing duplicate idle state execution...
+    </div>
+    <div
+      v-else 
+      class="game__scene"
+    >
       <Board
         :board="state.context.board"
+        :selectedPiece="state.context.selectedPiece"
+        @grab="send('GRAB_PIECE', { piece: $event })"
+        @release="send('RELEASE_PIECE')"
       />
-
       <div
         v-if="!state.matches('playing')"
         class="game__overlay"
@@ -12,12 +22,12 @@
         <ScreenNewGame
           v-if="state.value === 'idle'"
           :guesser="state.context.players[0]"
-          :send="send"
+          @submit="send('COIN', { selectedFace: $event })"
         />
         <ScreenFlippingCoin v-else-if="state.value === 'flipping_coin'" />
         <ScreenCoinResult
           v-else-if="state.value === 'coin_result'" 
-          :whitePlayer="whitePlayer"
+          :whitePlayer="state.context.currentPlayer"
         />
       </div>
     </div>
@@ -56,12 +66,9 @@ export default {
       devTools: true
     })
 
-    const whitePlayer = computed(() => state.value.context.players.find(p => p.color === 'white'))
-
     return {
       state,
       send,
-      whitePlayer
     };
   }
 };

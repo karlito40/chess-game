@@ -15,8 +15,9 @@ export default (/* internalDeps */) => (/* options */) => {
     selectedCoinFace: null,
     flippedCoinFace: null,
 
-    board: createFullBoard(),
+    board: null,
     selectedPiece: null,
+    currentPlayer: null,
     players: [
       {
         id: 1,
@@ -35,11 +36,17 @@ export default (/* internalDeps */) => (/* options */) => {
 
   return chessModel.createMachine({
     id: 'chess-game',
-    initial: 'idle',
+    initial: 'prevent_funny_vue3_xstate_bug', // TODO: investigate this
     states: {
+      prevent_funny_vue3_xstate_bug: {
+        after: {
+          50: 'idle'
+        }
+      },
       idle: {
+        entry: ['initBoard'],
         on: {
-          NEW_GAME: {
+          COIN: {
             target: 'flipping_coin',
             actions: ['selectCoinFace']
           }
@@ -59,7 +66,7 @@ export default (/* internalDeps */) => (/* options */) => {
 
       coin_result: {
         after: {
-          3000: 'playing'
+          1100: 'playing'
         }
       },
 
@@ -79,7 +86,7 @@ export default (/* internalDeps */) => (/* options */) => {
         id: 'result',
         entry: ['defineWinner'],
         on: {
-          NEW_GAME: 'flipping_coin',
+          NEW_GAME: 'idle',
           VIEW_REPLAY: 'analyze'
         }
       },
@@ -90,6 +97,7 @@ export default (/* internalDeps */) => (/* options */) => {
     }
   }, {
     guards: {
+      canSelectPiece: (context, event) => event.piece?.color === context.currentPlayer.color,
       // must also check for "echec"
       canMovePiece: (context, event) => true,
       // + canMovePiece
@@ -102,7 +110,7 @@ export default (/* internalDeps */) => (/* options */) => {
         await sleep(fallDuration)
 
         const rand = Math.random() > 0.5 
-        return Promise.resolve({ coinFace: rand ? 'heads' : 'tails' })
+        return { coinFace: rand ? 'heads' : 'tails' }
       },
     },
 
@@ -119,25 +127,48 @@ export default (/* internalDeps */) => (/* options */) => {
         flippedCoinFace: (context, event) => event.data.coinFace
       }),
 
-      determineWhitePlayer: chessModel.assign({
-        players: (context, event) => {
-          const { coinFace } = event.data
-          const didP1GuessRight = context.selectedCoinFace === coinFace
-          return [
-            {
-              ...context.players[0],
-              color: didP1GuessRight ? WHITE : BLACK
-            },
-            {
-              ...context.players[1],
-              color: !didP1GuessRight ? WHITE : BLACK
-            }
-          ]
+      determineWhitePlayer: chessModel.assign((context, event) => {
+        const { coinFace } = event.data
+        const didP1GuessRight = context.selectedCoinFace === coinFace
+        const players = [
+          {
+           ...context.players[0],
+            color: didP1GuessRight ? WHITE : BLACK
+          },
+          {
+            ...context.players[1],
+            color: !didP1GuessRight ? WHITE : BLACK
+          },
+        ]
+        const currentPlayer = players.find(player => player.color === WHITE)
+
+        return {
+          players,
+          currentPlayer
         }
       }),
 
       selectPiece: chessModel.assign({
-        selectedPiece: (_, event) =>  event.value
+        selectedPiece: (_, event) =>  event.piece
+      }),
+
+      nextPlayerTurn: chessModel.assign({
+        currentPlayer: (context, event) => context.players.find(player => player.id !== context.currentPlayer.id)
+      }),
+
+      highlightValidMoves: chessModel.assign({
+        board: (context, event) => {
+          return context.board.map((row, i) => {
+            return row.map((cell, j) => {
+              // TODO: move
+              if (cell.piece === context.selectedPiece) {
+                return { ...cell, highlighted: true }
+              }
+
+              return cell
+            })
+          })
+        }
       }),
     }
   });
@@ -146,44 +177,34 @@ export default (/* internalDeps */) => (/* options */) => {
 
 const PlayingState = () => {
   // todo: handle timer (go to result and defineWinner when the timer is reached)
-  const TurnState = (colorState) => {
-    return {
-      entry: ['startTimer'],
-      exit: ['pauseTimer', 'removeEveryHighlights'],
-      on: {
-        ASK_FOR_DRAW: '#deliberating_on_draw',
-        FORFEIT: '#result',
-        GRAB_PIECE: {
-          actions: ['selectPiece', 'highlightValidMove']
-        },
-        RELEASE_PIECE: [
-          {
-            cond: 'willCheckmate',
-            target: '#result',
-            actions: ['movePiece']
-          },
-          {
-            cond: 'canMovePiece',
-            actions: ['movePiece'],
-            target: `${invertColor(colorState)}_turn`
-          },
-          {
-            actions: ['highlightInvalidMode']
-          },
-        ]
-      }
-    }
-  }
   return {
-    initial: `${WHITE}_turn`,
-    entry: ['initBoard'],
+    initial: 'turn',
     states: {
-      [`${WHITE}_turn`]: TurnState(WHITE),
-      [`${BLACK}_turn`]: TurnState(BLACK),
-    },
-    on: {
-      // we could share the GRAB, RELEASE and FORFEIT events here
-      // but the visualizer became harder to read
+      turn: {
+        entry: ['startCurrentTimer'],
+        exit: ['pauseCurrentTimer', 'nextPlayerTurn', 'removeHighlights'],
+        on: {
+          ASK_FOR_DRAW: '#deliberating_on_draw',
+          FORFEIT: '#result',
+          GRAB_PIECE: {
+            cond: 'canSelectPiece',
+            actions: ['selectPiece', 'highlightValidMoves']
+          },
+          RELEASE_PIECE: [
+            {
+              cond: 'willCheckmate',
+              target: '#result',
+              actions: ['movePiece']
+            },
+            {
+              cond: 'canMovePiece',
+              actions: ['movePiece'],
+              target: 'turn'
+            }
+          ]
+        }
+      },
+      // [`${BLACK}_turn`]: TurnState(BLACK),
     },
   }
 }
