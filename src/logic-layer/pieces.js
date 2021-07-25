@@ -1,5 +1,5 @@
 // import { from } from "rxjs"
-import { WHITE, isEatablePiece } from "./board" // todo: circular deps :'(
+import { BLACK, isEatablePiece, getCloserPiece, isPositionInBoard, getPositionFromPiece, arePositionsDifferent } from "./board" // todo: circular deps :'(
 
 const ID = (() => {
   let id = 0
@@ -24,41 +24,63 @@ export const Queen = (color) => Piece('queen', color)
 export const Pawn = (color) => ({
   ...Piece('pawn', color),
   getValidMoves: (board, currentPosition) => {
-    // The white color is the reference color
-    const colorDirection = color === WHITE ? 1 : -1
-    // TODO: JUMP
-    const eatingPositions = [{
+    const opponentDirection = color === BLACK ? 1 : -1
+    const eatingMoves = [{
       x: currentPosition.x - 1,
-      y: currentPosition.y - (1 * colorDirection)
+      y: currentPosition.y + (1 * opponentDirection)
     }, {
       x: currentPosition.x + 1,
-      y: currentPosition.y - (1 * colorDirection)
+      y: currentPosition.y + (1 * opponentDirection)
       // we can only eat if the cell contains a piece
-    }].filter((eatingPosition) => isEatablePiece(board, eatingPosition, color))
+    }].filter((eatingMove) => isEatablePiece(board, eatingMove, color))
 
-    const isFirstMove = color === WHITE ? currentPosition.y === board.length - 2 : currentPosition.y === 1 
+    const isFirstMove = color === BLACK ? currentPosition.y === 1 : currentPosition.y === board.length - 2
     const firstMovePosition = {
       x: currentPosition.x,
-      y: currentPosition.y - (2 * colorDirection)
+      y: currentPosition.y + (2 * opponentDirection)
+    }
+    
+    const wallPiece = getCloserPiece(board, currentPosition, { translateY: opponentDirection })
+    const wallPosition = getPositionFromPiece(board, wallPiece)
+    const basicMove = {
+      x: currentPosition.x,
+      y: currentPosition.y + (1 * opponentDirection)
     }
 
     const rules = [
-      {
-        x: currentPosition.x,
-        y: currentPosition.y - (1 * colorDirection)
-      },
-      ...eatingPositions,
+      basicMove,
       ...isFirstMove && [firstMovePosition] || [],
     ]
+      .map((position) => applyWall(position, wallPosition))
+      .concat(eatingMoves)
 
-    return rules.filter((toPosition) => isPositionInside(board, toPosition))
+    return rules
+      .filter((toPosition) => toPosition 
+        && isPositionInBoard(board, toPosition) 
+        && arePositionsDifferent(currentPosition, toPosition)
+      )
   }
 })
 
+const applyWall = (toPosition, wallPosition) => {
+  if (wallPosition) {
+    if (wallPosition.x === toPosition.x && wallPosition.y === toPosition.y) {
+      return null
+    }
+    const newPosition = {
+      x: toPosition.x === wallPosition.x 
+      ? toPosition.x 
+      : toPosition.x > wallPosition.x 
+        ? Math.max(toPosition.x, wallPosition.x + 1)
+        : Math.min(toPosition.x, wallPosition.x - 1),
+      y: toPosition.y === wallPosition.y 
+        ? toPosition.y 
+        : toPosition.y > wallPosition.y 
+          ? Math.max(toPosition.y, wallPosition.y + 1)
+          : Math.min(toPosition.y, wallPosition.y - 1)
+    }
 
-const isPositionInside = (board, position) => {
-  const size = board.length; // a board is a square
-  return (position.x >= 0 && position.x < size) 
-    || (position.y >= 0 && position.y < size)
+    return newPosition
+  }
+  return toPosition
 }
-

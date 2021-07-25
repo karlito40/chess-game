@@ -1,5 +1,5 @@
 import { createModel } from 'xstate/lib/model'
-import { BLACK, WHITE, updateBoard, createFullBoard, movePiece, getCell, getPiecePosition } from './board'
+import { BLACK, WHITE, updateBoard, createFullBoard, movePiece, getCell, getPositionFromPiece } from './board'
 
 const FIFTEEN_MIN_IN_SEC = 60 * 15
 
@@ -162,7 +162,7 @@ export default (/* internalDeps */) => (/* options */) => {
       highlightValidMoves: chessModel.assign({
         board: ({ board, selectedPiece }, event) => {
           const newBoard = [...board]
-          const currentPosition = getPiecePosition(board, selectedPiece) // TODO: perf
+          const currentPosition = getPositionFromPiece(board, selectedPiece) // TODO: perf
           const validMoves = selectedPiece.getValidMoves(board, currentPosition)
           for (const move of validMoves) {
             const cell = getCell(newBoard, move)

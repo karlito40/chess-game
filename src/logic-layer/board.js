@@ -68,7 +68,7 @@ export const movePiece = (board, piece, position) => {
 
 export const getCell = (board, position) => board[position.y][position.x]
 export const getPiece = (board, position) => board[position.y]?.[position.x]?.piece
-export const getPiecePosition = (board, piece) => {
+export const getPositionFromPiece = (board, piece) => {
   for (let y = 0; y < board.length; y++) {
     for (let x = 0; x < board[y].length; x++) {
       if (board[y][x].piece === piece) {
@@ -78,10 +78,32 @@ export const getPiecePosition = (board, piece) => {
   }
   return null
 }
+
+export const getCloserPiece = (board, fromPosition, { translateX = 0, translateY = 0 }) => {
+  if (!isPositionInBoard(board, fromPosition)) {
+    return null
+  }
+
+  const testPosition = { x: fromPosition.x + translateX, y: fromPosition.y + translateY }
+  return getPiece(board, testPosition, { translateX, translateY })
+    || getCloserPiece(board, testPosition, { translateX, translateY })
+}
+
 export const isEmptyCell = (board, position) => Boolean(getPiece(position, board))
 export const isEatablePiece = (board, position, myColor) => {
   const piece = getPiece(board, position)
   return piece && piece.color !== myColor
+}
+
+
+export const isPositionInBoard = (board, position) => {
+  const size = board.length; // a board is a square
+  return (position.x >= 0 && position.x < size) 
+    || (position.y >= 0 && position.y < size)
+}
+
+export const arePositionsDifferent = (position1, position2) => {
+  return position1.x !== position2.x || position1.y !== position2.y
 }
 
 // export const withBoard = (board) => ({
