@@ -1,9 +1,5 @@
-const ID = (() => {
-  let id = 0
-  return () => {
-    return id++
-  }
-})()
+// import { Observable } from 'rxjs'
+import { Tower, Knight, Bishop, King, Queen, Pawn } from './pieces'
 
 export const BLACK = 'black'
 export const WHITE = 'white'
@@ -14,20 +10,6 @@ const Cell = (piece) => ({
   highlighted: false,
   piece
 });
-
-const Piece = (type, color) => ({
-  type,
-  color,
-  id: ID()
-})
-
-export const Tower = (color) => Piece('tower', color)
-export const Knight = (color) => Piece('knight', color)
-export const Bishop = (color) => Piece('bishop', color)
-export const King = (color) => Piece('king', color)
-export const Queen = (color) => Piece('queen', color)
-
-export const Pawn = (color) => Piece('pawn', color)
 
 export const createFullBoard = () => {
   return [
@@ -47,3 +29,66 @@ export const createEmptyBoard = () => {
     Array.from({ length: 8 }, (v, j) => Cell())
   )
 }
+
+export function updateBoard (board, cb) {
+  return board.map((row, y) => {
+    return row.map((cell, x) => {
+      return cb(cell, x, y)
+    })
+  })
+}
+
+export const removePiece = (board, targetedPiece) => {
+  return updateBoard(board, (cell) => {
+    if (cell.piece === targetedPiece) {
+      return { ...cell, piece: null }
+    }
+
+    return cell
+  })
+}
+
+export const addPiece = (board, piece, position) => {
+  return updateBoard(board, (cell, x, y) => {
+    if (position.x === x && position.y === y) {
+      return { ...cell, piece }
+    }
+
+    return cell;
+  })
+}
+
+export const movePiece = (board, piece, position) => {
+  return addPiece(
+    removePiece(board, piece),
+    piece,
+    position
+  )
+}
+
+export const getCell = (board, position) => board[position.y][position.x]
+export const getPiece = (board, position) => board[position.y]?.[position.x]?.piece
+export const getPiecePosition = (board, piece) => {
+  for (let y = 0; y < board.length; y++) {
+    for (let x = 0; x < board[y].length; x++) {
+      if (board[y][x].piece === piece) {
+        return { x, y }
+      }
+    }
+  }
+  return null
+}
+export const isEmptyCell = (board, position) => Boolean(getPiece(position, board))
+export const isEatablePiece = (board, position, myColor) => {
+  const piece = getPiece(board, position)
+  return piece && piece.color !== myColor
+}
+
+// export const withBoard = (board) => ({
+//   createFull: createFullBoard.bind(undefined, board),
+//   createEmpty: createEmptyBoard.bind(undefined, board),
+//   update: updateBoard.bind(undefined, board),
+//   removePiece: removePiece.bind(undefined, board),
+//   addPiece: removePiece.bind(undefined, board),
+//   movePiece: movePiece.bind(undefined, board)
+// })

@@ -1,10 +1,10 @@
 <template>
-  <div class="player-card">
+  <div
+    class="player-card"
+    :data-status="isPlaying ? 'playing' : 'idle'"
+    :data-color="player.color || ''"
+  >
     {{ player.fullName }}
-    <div
-      :data-color="player.color || ''"
-      class="player-color"
-    ></div>
   </div>
 </template>
 
@@ -15,7 +15,8 @@ export default {
     player: {
       type: Object,
       required: true
-    }
+    },
+    isPlaying: Boolean
   }
 }
 </script>
@@ -24,26 +25,19 @@ export default {
 .player-card {
   position: relative;
   padding: 1rem;
-  border: 1px solid black;
-  border-radius: 10px;
-  margin-bottom: 0.5rem;
+  border-left: 4px solid #ccc;
+  margin-bottom: 0.8rem;
 }
 
-.player-color {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 1rem;
-  height: 1rem;
-  transform: translate(-50%, -50%);
-  border-radius: 50%;
+.player-card[data-status='playing'] {
+  border-left: 4px solid red; 
 }
 
-.player-color[data-color="black"] {
+.player-card[data-color="black"] {
   background: var(--piece-dark-color);
 }
 
-.player-color[data-color="white"] {
+.player-card[data-color="white"] {
   background: var(--piece-light-color);
 }
 </style>

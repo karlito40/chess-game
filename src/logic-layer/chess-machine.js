@@ -1,5 +1,5 @@
 import { createModel } from 'xstate/lib/model'
-import { BLACK, WHITE , invertColor, createFullBoard, createEmptyBoard } from './board'
+import { BLACK, WHITE, updateBoard, createFullBoard, movePiece, getCell, getPiecePosition } from './board'
 
 const FIFTEEN_MIN_IN_SEC = 60 * 15
 
@@ -21,7 +21,7 @@ export default (/* internalDeps */) => (/* options */) => {
     players: [
       {
         id: 1,
-        fullName: 'John cena',
+        fullName: 'Luigi',
         timeLeft: FIFTEEN_MIN_IN_SEC,
         color: null
       },
@@ -46,7 +46,7 @@ export default (/* internalDeps */) => (/* options */) => {
       idle: {
         entry: ['initBoard'],
         on: {
-          COIN: {
+          FLIP_COIN: {
             target: 'flipping_coin',
             actions: ['selectCoinFace']
           }
@@ -97,9 +97,12 @@ export default (/* internalDeps */) => (/* options */) => {
     }
   }, {
     guards: {
-      canSelectPiece: (context, event) => event.piece?.color === context.currentPlayer.color,
+      canSelectPiece: (context, event) => context.currentPlayer.color === event.piece?.color,
       // must also check for "echec"
-      canMovePiece: (context, event) => true,
+      canMovePiece: ({ board, selectedPiece }, event) => {
+        // TODO: it shouldn't be base on the highlighted status (but i am lazy)
+        return Boolean(selectedPiece) && getCell(board, event.to)?.highlighted
+      },
       // + canMovePiece
       willCheckmate: (context, event) => false
     },
@@ -157,17 +160,34 @@ export default (/* internalDeps */) => (/* options */) => {
       }),
 
       highlightValidMoves: chessModel.assign({
-        board: (context, event) => {
-          return context.board.map((row, i) => {
-            return row.map((cell, j) => {
-              // TODO: move
-              if (cell.piece === context.selectedPiece) {
-                return { ...cell, highlighted: true }
-              }
+        board: ({ board, selectedPiece }, event) => {
+          const newBoard = [...board]
+          const currentPosition = getPiecePosition(board, selectedPiece) // TODO: perf
+          const validMoves = selectedPiece.getValidMoves(board, currentPosition)
+          for (const move of validMoves) {
+            const cell = getCell(newBoard, move)
+            newBoard[move.y][move.x] = { ...cell, highlighted: true }
+          }
 
-              return cell
-            })
+          return newBoard
+        }
+      }),
+
+      removeHighlights: chessModel.assign({
+        board: (context, event) => {
+          return updateBoard(context.board, (cell) => {
+            return { ...cell, highlighted: false }
           })
+        }
+      }),
+
+      movePiece: chessModel.assign((context, event) => {
+        const { to } = event
+        const { selectedPiece, board } = context
+
+        return {
+          board: movePiece(board, selectedPiece, to),
+          selectedPiece: null,
         }
       }),
     }

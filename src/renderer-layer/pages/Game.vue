@@ -13,7 +13,7 @@
         :board="state.context.board"
         :selectedPiece="state.context.selectedPiece"
         @grab="send('GRAB_PIECE', { piece: $event })"
-        @release="send('RELEASE_PIECE')"
+        @release="send('RELEASE_PIECE', { to: $event })"
       />
       <div
         v-if="!state.matches('playing')"
@@ -22,7 +22,7 @@
         <ScreenNewGame
           v-if="state.value === 'idle'"
           :guesser="state.context.players[0]"
-          @submit="send('COIN', { selectedFace: $event })"
+          @submit="send('FLIP_COIN', { selectedFace: $event })"
         />
         <ScreenFlippingCoin v-else-if="state.value === 'flipping_coin'" />
         <ScreenCoinResult
@@ -37,13 +37,13 @@
         v-for="player in state.context.players"
         :key="player.id"
         :player="player"
+        :isPlaying="player === state.context.currentPlayer"
       />
     </div>
   </div>
 </template>
 
 <script>
-import { computed, ref } from 'vue'
 import { useMachine } from '@xstate/vue'
 import { useLogicLayer } from '../hooks'
 import Board from '../components/Board.vue'

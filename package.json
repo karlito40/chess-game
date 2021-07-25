@@ -9,6 +9,7 @@
   "dependencies": {
     "@xstate/inspect": "^0.4.1",
     "@xstate/vue": "^0.8.0",
+    "rxjs": "^7.2.0",
     "vue": "^3.0.5",
     "xstate": "^4.22.0"
   },

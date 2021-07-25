@@ -8,7 +8,11 @@
         v-for="(cell, j) in row"
         :key="`${i}-${j}`"
         :data-id="`${i}-${j}:${(i*board.length)+j}`"
+        :data-x="j"
+        :data-y="i"
         :data-highlighted="cell.highlighted"
+        :ondrop="(event) => drop(event)"
+        :ondragover="(event) => allowDrop(event)"
         class="cell"
       >
         <div
@@ -16,11 +20,9 @@
           :data-id="cell.piece.id"
           :data-color="cell.piece.color"
           :data-status="selectedPiece?.id === cell.piece.id ? 'selected' : 'idle'"
+          :ondragstart="(event) => drag(event, cell.piece)"
           class="piece"
-          v-draggable="{ 
-            onStart: () => onDragStart(cell.piece),
-            onEnd: () => onDragEnd(cell.piece),
-          }"
+          draggable="true"
         >
           {{ cell.piece.type }}
         </div>
@@ -42,11 +44,20 @@ export default defineComponent({
   },
 
   methods: {
-    onDragStart (piece) {
+    drag (event, piece) {
       this.$emit('grab', piece)
     },
-    onDragEnd (piece) {
-      this.$emit('release', piece)
+
+    drop (event) {
+      event.preventDefault()
+      this.$emit('release', {
+        x: parseInt(event.target.dataset.x, 10),
+        y: parseInt(event.target.dataset.y, 10),
+      })
+    },
+
+    allowDrop (event) {
+      event.preventDefault()
     }
   }
 })
@@ -78,7 +89,7 @@ export default defineComponent({
   right: 0;
   left: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.1);
+  background: rgba(170, 7, 219, 0.6);
   pointer-events: none;
 }
 
